@@ -1,4 +1,4 @@
-name: Build APK
+name: Build OneSystem Clothing ERP APK
 
 on:
   workflow_dispatch:
@@ -11,31 +11,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Extract project
+        run: |
+          mkdir project
+          unzip -q OneSystemClothingERP_Pro_Final_SingleDevice.zip -d project
+
+      - name: Find Gradle project
+        run: |
+          echo "Searching for Gradle project..."
+          find project -name "settings.gradle*" -o -name "build.gradle*"
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract Android project
-        run: |
-          mkdir project
-          unzip -q OneSystemClothingERP_v2_Android_Server.zip -d project
-          cp -r project/* .
-
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --stacktrace
+      - name: Build APK
+        run: |
+          ROOT=$(dirname "$(find project -name 'settings.gradle.kts' -o -name 'settings.gradle' | head -1)")
+          echo "Gradle root: $ROOT"
+          cd "$ROOT"
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Find APK
+        run: |
+          find project -type f -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: OneSystem-Clothing-ERP-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: OneSystem-Clothing-ERP-Pro
+          path: project/**/build/outputs/apk/debug/*.apk
