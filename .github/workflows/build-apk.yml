@@ -33,13 +33,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build APK
+      -       - name: Build APK
         run: |
           ROOT=$(dirname "$(find project -name 'settings.gradle.kts' -o -name 'settings.gradle' | head -1)")
           echo "Gradle root: $ROOT"
           cd "$ROOT"
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          gradle assembleDebug --stacktrace
 
       - name: Find APK
         run: |
